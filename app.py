@@ -5,7 +5,9 @@ import pandas as pd
 
 app = Flask(__name__)
 
-model = joblib.load('healthy_meal_model.pkl')
+# Use absolute path so the model loads correctly in any working directory (e.g. Vercel)
+_dir = os.path.dirname(os.path.abspath(__file__))
+model = joblib.load(os.path.join(_dir, 'healthy_meal_model.pkl'))
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
