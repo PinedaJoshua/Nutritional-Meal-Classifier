@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Meal Classifier</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+        }
+
+        .main-card {
+            border-radius: 20px;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-header-gradient {
+            background: linear-gradient(135deg, #1a1a2e, #0f3460);
+            padding: 2.5rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .card-header-gradient h2 {
+            font-weight: 700;
+            font-size: 1.9rem;
+            letter-spacing: -0.5px;
+        }
+
+        .card-header-gradient .subtitle {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-tech {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.72rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #6c757d;
+        }
+
+        .input-group-text {
+            background: #f1f5f9;
+            border-right: none;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            border-left: none;
+            background: #f8fafc;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.12);
+            border-color: #0f3460;
+        }
+
+        .input-group:focus-within .input-group-text {
+            border-color: #0f3460;
+            background: #eef2ff;
+            color: #0f3460;
+        }
+
+        .form-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 5px;
+        }
+
+        .btn-classify {
+            background: linear-gradient(135deg, #0f3460, #1a1a2e);
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 14px;
+            border-radius: 12px;
+            letter-spacing: 0.3px;
+            transition: all 0.25s;
+        }
+
+        .btn-classify:hover {
+            background: linear-gradient(135deg, #1a4a8a, #2a2a5e);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(15, 52, 96, 0.35);
+        }
+
+        .btn-reset {
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 14px;
+            border-radius: 12px;
+            color: #64748b;
+            border-color: #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .btn-reset:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #475569;
+        }
+
+        .result-card-healthy {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            border: 2px solid #6ee7b7;
+            border-radius: 16px;
+        }
+
+        .result-card-unhealthy {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            border: 2px solid #f87171;
+            border-radius: 16px;
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            line-height: 1;
+        }
+
+        .result-label {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .progress {
+            height: 22px;
+            border-radius: 50px;
+            background: rgba(0,0,0,0.08);
+        }
+
+        .progress-bar {
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .confidence-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .alert-error {
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            color: #be123c;
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+
+        .divider-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 2rem 0 1.5rem;
+        }
+
+        .divider-section hr {
+            flex: 1;
+            margin: 0;
+            border-color: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-9 col-lg-8">
+
+            <div class="main-card card">
+
+                <!-- Header -->
+                <div class="card-header-gradient text-white text-center">
+                    <h2 class="mb-2">🥗 Nutritional Meal Classifier</h2>
+                    <p class="subtitle mb-3">Enter a meal's nutritional profile and our model will evaluate it</p>
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        <span class="badge-tech"><i class="fas fa-tree me-1"></i>Random Forest</span>
+                        <span class="badge-tech"><i class="fas fa-balance-scale me-1"></i>SMOTE Balanced</span>
+                        <span class="badge-tech"><i class="fas fa-brain me-1"></i>Ensemble Model</span>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+
+                    <!-- Error Alert -->
+                    {% if error %}
+                    <div class="alert alert-error d-flex align-items-center gap-2 mb-4" role="alert">
+                        <i class="fas fa-circle-exclamation"></i>
+                        <span>{{ error }}</span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Step 1 Label -->
+                    <p class="section-label mb-3">
+                        <i class="fas fa-pencil me-1"></i> Step 1 — Enter Nutritional Data
+                    </p>
+
+                    <form method="POST" action="/" id="mealForm">
+                        <div class="row g-3">
+
+                            <div class="col-md-6 col-lg-3">
+                                <label class="form-label">Calories</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-fire-flame-curved"></i></span>
+                                    <input type="number" step="0.1" min="0" class="form-control"
+                                           name="calories" placeholder="e.g. 350"
+                                           value="{{ form_data.get('calories', '') }}" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-lg-3">
+                                <label class="form-label">Protein (g)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-drumstick-bite"></i></span>
+                                    <input type="number" step="0.1" min="0" class="form-control"
+                                           name="protein" placeholder="e.g. 25"
+                                           value="{{ form_data.get('protein', '') }}" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-lg-3">
+                                <label class="form-label">Carbs (g)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-bread-slice"></i></span>
+                                    <input type="number" step="0.1" min="0" class="form-control"
+                                           name="carbs" placeholder="e.g. 45"
+                                           value="{{ form_data.get('carbs', '') }}" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-lg-3">
+                                <label class="form-label">Fat (g)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-droplet"></i></span>
+                                    <input type="number" step="0.1" min="0" class="form-control"
+                                           name="fat" placeholder="e.g. 12"
+                                           value="{{ form_data.get('fat', '') }}" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-lg-3">
+                                <label class="form-label">Fiber (g)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-leaf"></i></span>
+                                    <input type="number" step="0.1" min="0" class="form-control"
+                                           name="fiber" placeholder="e.g. 6"
+                                           value="{{ form_data.get('fiber', '') }}" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-lg-3">
+                                <label class="form-label">Sugar (g)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-candy-cane"></i></span>
+                                    <input type="number" step="0.1" min="0" class="form-control"
+                                           name="sugar" placeholder="e.g. 8"
+                                           value="{{ form_data.get('sugar', '') }}" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-lg-3">
+                                <label class="form-label">Sodium (mg)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-flask"></i></span>
+                                    <input type="number" step="0.1" min="0" class="form-control"
+                                           name="sodium" placeholder="e.g. 480"
+                                           value="{{ form_data.get('sodium', '') }}" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-lg-3">
+                                <label class="form-label">Cholesterol (mg)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-heart-pulse"></i></span>
+                                    <input type="number" step="0.1" min="0" class="form-control"
+                                           name="cholesterol" placeholder="e.g. 30"
+                                           value="{{ form_data.get('cholesterol', '') }}" required>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="row g-2 mt-3">
+                            <div class="col">
+                                <button type="submit" class="btn btn-classify btn-dark w-100 text-white">
+                                    <i class="fas fa-magnifying-glass-chart me-2"></i>Run Classification
+                                </button>
+                            </div>
+                            <div class="col-auto">
+                                <button type="reset" class="btn btn-reset btn-outline-secondary w-100"
+                                        onclick="window.location.href='/'">
+                                    <i class="fas fa-rotate-left me-1"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Result Section -->
+                    {% if prediction %}
+                    <div class="divider-section">
+                        <hr>
+                        <p class="section-label mb-0">
+                            <i class="fas fa-chart-bar me-1"></i> Step 2 — Model Result
+                        </p>
+                        <hr>
+                    </div>
+
+                    <div class="p-4 text-center {{ 'result-card-healthy' if prediction == 'HEALTHY' else 'result-card-unhealthy' }}">
+                        <div class="result-icon mb-2">
+                            {{ '✅' if prediction == 'HEALTHY' else '❌' }}
+                        </div>
+                        <div class="result-label {{ 'text-success' if prediction == 'HEALTHY' else 'text-danger' }} mb-1">
+                            {{ prediction }}
+                        </div>
+                        <p class="text-muted small mb-4">
+                            The Random Forest ensemble classified this meal as <strong>{{ prediction.lower() }}</strong>.
+                        </p>
+
+                        <p class="confidence-label text-muted mb-2">
+                            <i class="fas fa-gauge-high me-1"></i> Ensemble Confidence Score
+                        </p>
+                        <div class="progress mx-auto mb-1" style="max-width: 500px;">
+                            <div class="progress-bar {{ 'bg-success' if prediction == 'HEALTHY' else 'bg-danger' }} progress-bar-striped progress-bar-animated"
+                                 id="confidenceBar"
+                                 role="progressbar"
+                                 data-width="{{ confidence }}"
+                                 aria-valuenow="{{ confidence }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ confidence }}%
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-1">{{ confidence }}% certainty across all decision trees</p>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+
+            <p class="text-center text-white-50 small mt-3">
+                <i class="fas fa-robot me-1"></i> Trained on balanced nutritional dataset &mdash; for educational use only
+            </p>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const bar = document.getElementById('confidenceBar');
+    if (bar) bar.style.width = bar.dataset.width + '%';
+</script>
+</body>
+</html>
